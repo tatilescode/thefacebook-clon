@@ -1,48 +1,114 @@
 <?php
-session_start();
-include 'config.php';
+// login.php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-$error = "";
+require_once 'config.php';
+secureSession();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = md5($_POST['password']);
+// Si ya está logueado, redirigir
+if (isset($_SESSION['user_id'])) {
+    header('Location: home.php');
+    exit();
+}
 
-    $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
-    $result = mysqli_query($conn, $query);
+$error = '';
 
-    if (mysqli_num_rows($result) == 1) {
-        $_SESSION['user'] = mysqli_fetch_assoc($result);
-        header("Location: home.php");
-        exit();
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
+    
+    if (empty($email) || empty($password)) {
+        $error = 'Please enter both email and password.';
     } else {
-        $error = "Datos incorrectos.";
+        try {
+            $conn = getDBConnection();
+            
+            // Buscar usuario por email y contraseña (texto plano)
+            $stmt = $conn->prepare("SELECT id, first_name, last_name, avatar FROM users WHERE email = ? AND password = ?");
+            
+            if (!$stmt) {
+                $error = 'Database error: ' . $conn->error;
+            } else {
+                $stmt->bind_param("ss", $email, $password);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                if ($result->num_rows === 1) {
+                    $user = $result->fetch_assoc();
+                    
+                    // Establecer sesión
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
+                    $_SESSION['user_avatar'] = $user['avatar'];
+                    
+                    // Actualizar último login
+                    $updateStmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                    $updateStmt->bind_param("i", $user['id']);
+                    $updateStmt->execute();
+                    $updateStmt->close();
+                    
+                    $stmt->close();
+                    $conn->close();
+                    
+                    // Redirigir a home
+                    header('Location: home.php');
+                    exit();
+                } else {
+                    $error = 'Invalid email or password. Please check your credentials.';
+                }
+                
+                $stmt->close();
+            }
+            
+            $conn->close();
+        } catch (Exception $e) {
+            $error = 'Error: ' . $e->getMessage();
+        }
     }
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Thefacebook - Login</title>
-<link rel="stylesheet" href="assets/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>thefacebook | login</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-
-<div class="container small">
-    <h2>Login</h2>
-    <form method="POST">
-        <input type="email" name="email" placeholder="E-mail" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
-    </form>
-    <p style="color:red;"><?php echo $error; ?></p>
-
-    <a href="index.php">Back</a>
-</div>
-
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <h1><a href="index.php">thefacebook</a></h1>
+            <p class="tagline">a Mark Zuckerberg production</p>
+        </div>
+        
+        <div class="login-box">
+            <h2>Log In</h2>
+            
+            <?php if ($error): ?>
+                <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+            <?php endif; ?>
+            
+            <form method="POST" action="login.php">
+                <div class="form-group">
+                    <label for="email">University Email:</label>
+                    <input type="email" id="email" name="email" required
+                           value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Log In</button>
+            </form>
+            
+            <div class="register-link">
+                Don't have an account? <a href="register.php">Sign up</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
-            Welcome to Thefacebook, a social utility that helps you connect with your friends and family.
-            Share photos, updates, and stay in touch with people you care about.
-        </p>
-    </div>  

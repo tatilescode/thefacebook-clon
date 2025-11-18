@@ -1,14 +1,41 @@
 <?php
-$host = "sql100.infinityfree.com"; 
-$user = "if0_40402756"; 
-$pass = "Tati2025le!";
-$db   = "if0_40402756_hefacebook";
+define('DB_HOST', 'localhost'); 
+define('DB_USER', 'root'); 
+define('DB_PASS', ''); 
+define('DB_NAME', 'thefacebook');
 
-$conn = mysqli_connect($host, $user, $pass, $db);
-
-if(!$conn){
-    die("Error de conexión: " . mysqli_connect_error());
+function getDBConnection() {
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    
+    if ($conn->connect_error) {
+        die("Error de conexión: " . $conn->connect_error);
+    }
+    
+    $conn->set_charset("utf8mb4");
+    return $conn;
 }
 
-session_start();
+// Dominios universitarios permitidos
+function isUniversityEmail($email) {
+    $universityDomains = [
+        'uvg.edu.gt',
+        'galileo.edu',
+        'usac.edu.gt',
+        'url.edu.gt',
+        'ufm.edu',
+        'umg.edu.gt',
+        'unis.edu.gt',
+        'marianogalvez.edu.gt'
+    ];
+    
+    $domain = substr(strrchr($email, "@"), 1);
+    return in_array(strtolower($domain), $universityDomains);
+}
+
+// Iniciar sesión segura
+function secureSession() {
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+}
 ?>

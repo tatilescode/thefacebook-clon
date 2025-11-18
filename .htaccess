@@ -1,0 +1,23 @@
+# .htaccess - Configuración para Apache
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Proteger archivos sensibles
+<FilesMatch "^(config\.php|database\.sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Configuración de PHP
+php_flag display_errors Off
+php_flag log_errors On
+php_value upload_max_filesize 5M
+php_value post_max_size 6M
+
+# Seguridad adicional
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
