@@ -19,13 +19,7 @@ function getDBConnection() {
 function isUniversityEmail($email) {
     $universityDomains = [
         'uvg.edu.gt',
-        'galileo.edu',
-        'usac.edu.gt',
-        'url.edu.gt',
-        'ufm.edu',
-        'umg.edu.gt',
-        'unis.edu.gt',
-        'marianogalvez.edu.gt'
+
     ];
     
     $domain = substr(strrchr($email, "@"), 1);

@@ -288,15 +288,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .footer-text {
             color: #666;
         }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Espacio entre el título y la producción */
+        }
+
+        /* Foto del creador */
+        #creator-photo {
+            width: 75px;
+            height: 75px;
+            border: 1px solid #ffffff;
+            object-fit: cover;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
         <!-- Header -->
+
         <div class="header">
             <div class="header-left">
                 <div class="logo">[thefacebook]</div>
-                <div class="logo-text">a Mark Zuckerberg production</div>
+                <img 
+                        id="creator-photo" 
+                        src="uploads/foto tati.jpg" 
+                        alt="Foto de la Creadora" 
+                    >
+                <div class="logo-text">a Tatiana López production</div>
             </div>
             <div class="nav-links">
                 <a href="login.php">login</a>

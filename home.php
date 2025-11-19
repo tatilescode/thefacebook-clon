@@ -1,3 +1,5 @@
+
+
 <?php
 // home.php
 require_once 'config.php';
@@ -26,7 +28,11 @@ if (!$user) {
 
 $stmt->close();
 $conn->close();
+
+
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
